@@ -26,8 +26,8 @@ export default class NewBill {
     const formData = new FormData()
     const fileExt = e.target.value.split('.')[e.target.value.split('.').length - 1]
     const email = JSON.parse(localStorage.getItem("user")).email
-    formData.append('file', file)
-    formData.append('email', email)
+    formData.set("file", file)
+    formData.set("email", email)
 
     if (this.allowedExtensions.includes(fileExt)) {
       fileErrorSpan.innerText = "";
