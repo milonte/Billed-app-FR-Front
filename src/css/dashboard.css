@@ -94,7 +94,7 @@
   justify-content: space-between;
 }
 
-.centered-svg-container{
+.centered-svg-container {
   display: flex;
   justify-content: center;
   align-content: center;
@@ -108,12 +108,12 @@
 
 .dashboard-svg-container {
   position: absolute;
-  top: 40%; left: 50%;
-  transform: translate(-50%,-40%);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -40%);
 }
 
 .arrow-icon {
   transform: rotate(90deg);
   cursor: pointer;
 }
-
