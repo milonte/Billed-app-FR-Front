@@ -3,15 +3,15 @@ import MailIcon from "../assets/svg/mail.js"
 import DisconnectIcon from "../assets/svg/disconnect.js"
 
 export default (height) => {
-    let user;
-    user = JSON.parse(localStorage.getItem('user'))
-    if (typeof user === 'string') {
-      user = JSON.parse(user)
-    }
-    if (user && user.type === 'Employee') {
-      return (
-        `
-        <div class='vertical-navbar' style='height: ${height}vh;'>
+  let user;
+  user = JSON.parse(localStorage.getItem('user'))
+  if (typeof user === 'string') {
+    user = JSON.parse(user)
+  }
+  if (user && user.type === 'Employee') {
+    return (
+      `
+        <div class='vertical-navbar' style='min-height: ${height}vh;'>
           <div class='layout-title'> Billed </div>
           <div id='layout-icon1' data-testid="icon-window">
             ${WindowIcon}
@@ -24,17 +24,17 @@ export default (height) => {
           </div>
       </div>
         `
-      ) 
-    } else {
-      return (
-        `
-        <div class='vertical-navbar' style='height: ${height}vh;'>
+    )
+  } else {
+    return (
+      `
+        <div class='vertical-navbar' style='min-height: ${height}vh;'>
           <div class='layout-title'> Billed </div>
             <div id='layout-disconnect' data-testid='layout-disconnect'>
               ${DisconnectIcon}
             </div>
           </div>
         `
-      )
-    }
+    )
+  }
 }

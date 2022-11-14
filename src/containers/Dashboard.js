@@ -32,7 +32,7 @@ export const card = (bill) => {
   const firstName = firstAndLastNames.includes('.') ?
     firstAndLastNames.split('.')[0] : ''
   const lastName = firstAndLastNames.includes('.') ?
-  firstAndLastNames.split('.')[1] : firstAndLastNames
+    firstAndLastNames.split('.')[1] : firstAndLastNames
 
   return (`
     <div class='bill-card' id='open-bill${bill.id}' data-testid='open-bill${bill.id}'>
@@ -71,10 +71,11 @@ export default class {
   constructor({ document, onNavigate, store, bills, localStorage }) {
     this.document = document
     this.onNavigate = onNavigate
+    this.bills = bills
     this.store = store
-    $('#arrow-icon1').click((e) => this.handleShowTickets(e, bills, 1))
-    $('#arrow-icon2').click((e) => this.handleShowTickets(e, bills, 2))
-    $('#arrow-icon3').click((e) => this.handleShowTickets(e, bills, 3))
+    $('#arrow-icon1').click((e) => this.handleShowTickets(e, this.bills, 1))
+    $('#arrow-icon2').click((e) => this.handleShowTickets(e, this.bills, 2))
+    $('#arrow-icon3').click((e) => this.handleShowTickets(e, this.bills, 3))
     new Logout({ localStorage, onNavigate })
   }
 
@@ -85,26 +86,34 @@ export default class {
     if (typeof $('#modaleFileAdmin1').modal === 'function') $('#modaleFileAdmin1').modal('show')
   }
 
-  handleEditTicket(e, bill, bills) {
-    if (this.counter === undefined || this.id !== bill.id) this.counter = 0
-    if (this.id === undefined || this.id !== bill.id) this.id = bill.id
-    if (this.counter % 2 === 0) {
-      bills.forEach(b => {
+  handleEditTicket(e, bill) {
+    const billCard = document.getElementById(`open-bill${bill.id}`)
+    if (!billCard.classList.contains("show")) {
+      // set all bills to blue
+      this.bills.forEach(b => {
         $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
       })
+      this.document.querySelectorAll(".bill-card, .show").forEach(card => {
+        card.classList.remove("show")
+      })
+      billCard.classList.add("show")
+      // set current bill to black
       $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
+      // show current bill details
       $('.dashboard-right-container div').html(DashboardFormUI(bill))
       $('.vertical-navbar').css({ height: '150vh' })
-      this.counter ++
     } else {
+      this.document.querySelectorAll(".bill-card, .show").forEach(card => {
+        card.classList.remove("show")
+      })
       $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
 
       $('.dashboard-right-container div').html(`
         <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
       `)
       $('.vertical-navbar').css({ height: '120vh' })
-      this.counter ++
     }
+
     $('#icon-eye-d').click(this.handleClickIconEye)
     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
     $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill))
@@ -131,46 +140,50 @@ export default class {
   }
 
   handleShowTickets(e, bills, index) {
-    if (this.counter === undefined || this.index !== index) this.counter = 0
-    if (this.index === undefined || this.index !== index) this.index = index
-    if (this.counter % 2 === 0) {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html(cards(filteredBills(bills, getStatus(this.index))))
-      this.counter ++
+    const arrow = this.document.getElementById(`arrow-icon${index}`)
+    // if section is hidden, show
+    // else if section is shown, hide
+    if (!arrow.classList.contains("show")) {
+      arrow.classList.add("show")
+      $(`#arrow-icon${index}`).css({ transform: 'rotate(0deg)' })
+
+      // get filtered bills (filtered by status)
+      const filBills = filteredBills(bills, getStatus(index))
+      // display cards
+      $(`#status-bills-container${index}`)
+        .html(cards(filBills))
+
+      // on click, display edit bill on right
+      filBills.forEach(bill => {
+        this.document.getElementById(`open-bill${bill.id}`).addEventListener("click", (e) => this.handleEditTicket(e, bill))
+      })
     } else {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
-      $(`#status-bills-container${this.index}`)
+      arrow.classList.remove("show")
+      $(`#arrow-icon${index}`).css({ transform: 'rotate(90deg)' })
+      $(`#status-bills-container${index}`)
         .html("")
-      this.counter ++
     }
-
-    bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
-    })
-
     return bills
-
   }
 
   getBillsAllUsers = () => {
     if (this.store) {
       return this.store
-      .bills()
-      .list()
-      .then(snapshot => {
-        const bills = snapshot
-        .map(doc => ({
-          id: doc.id,
-          ...doc,
-          date: doc.date,
-          status: doc.status
-        }))
-        return bills
-      })
-      .catch(error => {
-        throw error;
-      })
+        .bills()
+        .list()
+        .then(snapshot => {
+          const bills = snapshot
+            .map(doc => ({
+              id: doc.id,
+              ...doc,
+              date: doc.date,
+              status: doc.status
+            }))
+          return bills
+        })
+        .catch(error => {
+          throw error;
+        })
     }
   }
 
@@ -178,11 +191,11 @@ export default class {
   /* istanbul ignore next */
   updateBill = (bill) => {
     if (this.store) {
-    return this.store
-      .bills()
-      .update({data: JSON.stringify(bill), selector: bill.id})
-      .then(bill => bill)
-      .catch(console.log)
+      return this.store
+        .bills()
+        .update({ data: JSON.stringify(bill), selector: bill.id })
+        .then(bill => bill)
+        .catch(console.log)
     }
   }
 }
