@@ -14,7 +14,7 @@ export default class NewBill {
     this.fileName = null
     this.billId = null
     this.allowedExtensions = ['jpg', 'jpeg', 'png']
-    this.allowubmit = false
+    this.allowSubmit = false
     new Logout({ document, localStorage, onNavigate })
   }
   handleChangeFile = e => {
@@ -24,12 +24,12 @@ export default class NewBill {
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length - 1]
     const formData = new FormData()
-    const fileExt = e.target.value.split('.')[e.target.value.split('.').length - 1]
+    const fileType = e.target.files[0].type.split('/')[0]
     const email = JSON.parse(localStorage.getItem("user")).email
     formData.set("file", file)
     formData.set("email", email)
 
-    if (this.allowedExtensions.includes(fileExt)) {
+    if ("image" == fileType) {
       fileErrorSpan.innerText = "";
       this.store
         .bills()
@@ -40,20 +40,22 @@ export default class NewBill {
           }
         })
         .then(({ fileUrl, key }) => {
-          console.log(fileUrl)
           this.billId = key
           this.fileUrl = fileUrl
           this.fileName = fileName
-          this.allowubmit = true
+          this.allowSubmit = true
         }).catch(error => console.error(error))
     } else {
       fileErrorSpan.innerText = "Fichier non valide";
     }
   }
   handleSubmit = e => {
+    const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
+    const fileType = file.type.split('/')[0]
+
     e.preventDefault()
-    console.log('e.target.querySelector(`input[data-testid="datepicker"]`).value', e.target.querySelector(`input[data-testid="datepicker"]`).value)
-    if (this.allowubmit) {
+    console.log(e)
+    if ("image" == fileType) {
       const email = JSON.parse(localStorage.getItem("user")).email
       const bill = {
         email,
@@ -68,6 +70,7 @@ export default class NewBill {
         fileName: this.fileName,
         status: 'pending'
       }
+      console.log(bill)
       this.updateBill(bill)
       this.onNavigate(ROUTES_PATH['Bills'])
     }
