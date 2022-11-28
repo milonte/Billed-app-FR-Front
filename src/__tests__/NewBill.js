@@ -9,6 +9,7 @@ import mockStore from "../__mocks__/store"
 import router from "../app/Router.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes"
 import userEvent from "@testing-library/user-event";
+import { prototype } from "jest-environment-jsdom";
 
 jest.mock("../app/Store", () => mockStore)
 
@@ -121,26 +122,17 @@ describe("Given I am connected as an employee", () => {
         document, onNavigate, store: mockStore, localStorage: window.localStorage
       })
 
-      const bill = {
-        type: 'Transports',
-        name: 'Test New Bill',
-        date: new Date().getTime(),
-        amount: 45,
-        vat: 20,
-        pct: 20,
-        commentary: 'This is a commentary of new Bill'
-      }
 
       const form = screen.getByTestId("form-new-bill")
-      screen.getByTestId("expense-type").value = bill.type
-      screen.getByTestId("expense-name").value = bill.name
-      screen.getByTestId("datepicker").value = bill.date
-      screen.getByTestId("amount").value = bill.amount
-      screen.getByTestId("vat").value = bill.vat
-      screen.getByTestId("pct").value = bill.pct
-      screen.getByTestId("commentary").value = bill.commentary
 
-      const fileInput = screen.getByTestId('file')
+      screen.getByTestId("expense-type").value = "Transports"
+      screen.getByTestId("expense-name").value = 'Test New Bill'
+      screen.getByTestId("datepicker").value = '050510751'
+      screen.getByTestId("amount").value = 45
+      screen.getByTestId("vat").value = 20
+      screen.getByTestId("pct").value = 20
+      screen.getByTestId("commentary").value = 'This is a commentary of new Bill'
+
       const blob = new Blob(["image"], {
         type: 'image/png',
         lastModifiedDate: new Date(),
@@ -152,6 +144,8 @@ describe("Given I am connected as an employee", () => {
         lastModified: new Date(),
         webkitRelativePath: ""
       });
+
+      const fileInput = screen.getByTestId("file")
 
       fireEvent.change(fileInput, {
         target: {
