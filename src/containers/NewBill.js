@@ -24,13 +24,17 @@ export default class NewBill {
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length - 1]
     const formData = new FormData()
-    const fileType = e.target.files[0].type.split('/')[0]
+    const fileType = file.type.split('/')[0]
     const email = JSON.parse(localStorage.getItem("user")).email
     formData.set("file", file)
     formData.set("email", email)
 
     if ("image" == fileType) {
       fileErrorSpan.innerText = "";
+      if (this.billId) {
+        this.store.bills().delete({ selector: this.billId })
+      }
+
       this.store
         .bills()
         .create({
@@ -70,7 +74,7 @@ export default class NewBill {
       }
       console.log(bill)
       this.updateBill(bill)
-      this.onNavigate(ROUTES_PATH['Bills'])
+      //this.onNavigate(ROUTES_PATH['Bills'])
     }
   }
 

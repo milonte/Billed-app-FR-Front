@@ -10,6 +10,9 @@ import router from "../app/Router.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes"
 import userEvent from "@testing-library/user-event";
 import { prototype } from "jest-environment-jsdom";
+import Bills from "../containers/Bills.js";
+import store from "../__mocks__/store";
+import { localStorageMock } from "../__mocks__/localStorage.js"
 
 jest.mock("../app/Store", () => mockStore)
 
@@ -41,7 +44,7 @@ describe("Given I am connected as an employee", () => {
       }
 
       const newBillContainer = new NewBill({
-        document, onNavigate, store: mockStore, localStorage: window.localStorage
+        document, onNavigate, store: mockStore, localStorage: localStorageMock
       })
 
       const file = new File([
@@ -77,7 +80,7 @@ describe("Given I am connected as an employee", () => {
       }
 
       const newBillContainer = new NewBill({
-        document, onNavigate, store: mockStore, localStorage: window.localStorage
+        document, onNavigate, store: mockStore, localStorage: localStorageMock
       })
 
       const blob = new Blob(["image"], {
@@ -119,9 +122,9 @@ describe("Given I am connected as an employee", () => {
       }
 
       const newBillContainer = new NewBill({
-        document, onNavigate, store: mockStore, localStorage: window.localStorage
+        document, onNavigate, store: mockStore
+        , localStorage: localStorageMock
       })
-
 
       const form = screen.getByTestId("form-new-bill")
 
@@ -165,5 +168,66 @@ describe("Given I am connected as an employee", () => {
     })
   })
 
+  // test d'intégration POST
+  describe("When I navigate to NewBill", () => {
+    let mockedStore
+    beforeEach(() => {
+      mockedStore = jest.spyOn(mockStore, "bills")
+    })
+    afterEach(() => {
+      // Reset to the original method implementation (non-mocked) and clear all the mock data
+      mockedStore.mockRestore();
+    });
+
+    test("fetches bills from an API get response", async () => {
+      const handleSubmit = jest.fn((e) => {
+        e.preventDefault()
+        mockStore
+          .bills()
+          .create('data')
+          .catch(err => err.message)
+          .then(resp => {
+            expect(resp.key).toBe("1234")
+            expect(resp.fileUrl).toBe("https://localhost:3456/images/test.jpg")
+          })
+      })
+
+      const submitBtn = screen.getByTestId("btn-send-bill")
+      submitBtn.addEventListener("click", (e) => handleSubmit(e))
+
+      userEvent.click(submitBtn)
+      expect(handleSubmit).toHaveBeenCalled()
+    })
+
+    describe("When an error occurs on API", () => {
+      test("fetches bills from an API and fails with 404 message error", async () => {
+
+        mockStore.bills.mockImplementationOnce(() => {
+          return {
+            create: () => {
+              return Promise.reject(new Error("Erreur 404"))
+            }
+          }
+        })
+
+        const handleSubmit = jest.fn((e) => {
+          e.preventDefault()
+          mockStore
+            .bills()
+            .create('data')
+            .catch(err => expect(err.message).toBe("Erreur 404"))
+        })
+
+        const submitBtn = screen.getByTestId("btn-send-bill")
+        submitBtn.addEventListener("click", (e) => handleSubmit(e))
+
+        userEvent.click(submitBtn)
+        expect(handleSubmit).toHaveBeenCalled()
+        expect(handleSubmit).toThrowError()
+      })
+
+    })
+
+  })
 
 })
