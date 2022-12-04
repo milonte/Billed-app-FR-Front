@@ -74,7 +74,7 @@ export default class NewBill {
       }
       console.log(bill)
       this.updateBill(bill)
-      //this.onNavigate(ROUTES_PATH['Bills'])
+      this.onNavigate(ROUTES_PATH['Bills'])
     }
   }
 
