@@ -6,12 +6,9 @@ import { fireEvent, screen, waitFor } from "@testing-library/dom"
 import NewBillUI from "../views/NewBillUI.js"
 import NewBill from "../containers/NewBill.js"
 import mockStore from "../__mocks__/store"
-import router from "../app/Router.js";
-import { ROUTES, ROUTES_PATH } from "../constants/routes"
+import { ROUTES } from "../constants/routes"
 import userEvent from "@testing-library/user-event";
-import { prototype } from "jest-environment-jsdom";
-import Bills from "../containers/Bills.js";
-import store from "../__mocks__/store";
+
 import { localStorageMock } from "../__mocks__/localStorage.js"
 
 jest.mock("../app/Store", () => mockStore)
@@ -216,6 +213,32 @@ describe("Given I am connected as an employee", () => {
             .bills()
             .create('data')
             .catch(err => expect(err.message).toBe("Erreur 404"))
+        })
+
+        const submitBtn = screen.getByTestId("btn-send-bill")
+        submitBtn.addEventListener("click", (e) => handleSubmit(e))
+
+        userEvent.click(submitBtn)
+        expect(handleSubmit).toHaveBeenCalled()
+        expect(handleSubmit).toThrowError()
+      })
+
+      test("fetches bills from an API and fails with 500 message error", async () => {
+
+        mockStore.bills.mockImplementationOnce(() => {
+          return {
+            create: () => {
+              return Promise.reject(new Error("Erreur 500"))
+            }
+          }
+        })
+
+        const handleSubmit = jest.fn((e) => {
+          e.preventDefault()
+          mockStore
+            .bills()
+            .create('data')
+            .catch(err => expect(err.message).toBe("Erreur 500"))
         })
 
         const submitBtn = screen.getByTestId("btn-send-bill")
